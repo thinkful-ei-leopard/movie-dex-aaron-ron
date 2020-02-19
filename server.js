@@ -3,26 +3,50 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-const movieData = require('./movie-data-small');
+const movieData = require('./movie-data-small.json');
 
 const app = express();
-
 app.use(morgan('dev'));
 
+// endpoint ONLY responds when a valid Authorization header with Bearer API token value
 app.use(function validateBearerToken(req, res, next) {
-    console.log('validate bearer token middleware');
+  const apiToken = process.env.API_KEY;
+  const authToken = req.get('Authorization');
 
-    next();
+  if(!authToken || authToken.split(' ')[1] !== apiToken) {
+    return res.status(401).json({ error: 'Unauthorized request'});
+  }
+  console.log('validate bearer token middleware');
+
+  next();
 });
 
 function handleGetMovies(req, res) {
-    res.status(200).json({ message: 'hello world'});
+  let response = movieData; // our JSON data
+
+  if (req.query.genre) {
+    response = response.filter ( movie =>
+      movie.genre.toLowerCase().includes(req.query.genre.toLowerCase())
+    );
+  }
+  if (req.query.country) {
+    response = response.filter ( movie =>
+      movie.country.toLowerCase().includes(req.query.country.toLowerCase())
+    );
+  }
+  if (req.query.avg_vote) {
+    response = response.filter ( movie =>
+      Number(movie.avg_vote) >= Number(req.query.avg_vote)
+    );
+  }
+  
+  res.status(200).json(response);
 }
 // have search for genre/country/avg_vote
 // api responds with an array of full movie entries for search results
-// endpoint ONLY responds when a valid Authorization header with Bearer API token value
 // the endpoint should have security with CORS and best pracitce headers
 app.get('/movie', handleGetMovies);
+  
 
 const PORT = 8000;
 app.listen(PORT, () => {
