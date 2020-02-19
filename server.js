@@ -7,6 +7,8 @@ const movieData = require('./movie-data-small.json');
 
 const app = express();
 app.use(morgan('dev'));
+app.use(helmet());
+app.use(cors());
 
 // endpoint ONLY responds when a valid Authorization header with Bearer API token value
 app.use(function validateBearerToken(req, res, next) {
