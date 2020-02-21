@@ -18,7 +18,6 @@ app.use(function validateBearerToken(req, res, next) {
   if(!authToken || authToken.split(' ')[1] !== apiToken) {
     return res.status(401).json({ error: 'Unauthorized request'});
   }
-  console.log('validate bearer token middleware');
 
   next();
 });
@@ -50,7 +49,7 @@ function handleGetMovies(req, res) {
 app.get('/movie', handleGetMovies);
   
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Express is listening at http://localhost:${PORT}`)
 });
